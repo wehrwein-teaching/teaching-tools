@@ -33,8 +33,6 @@ from canvasapi.requester import Requester
 from canvasapi.file import File
 from canvasapi.exceptions import CanvasException, ResourceDoesNotExist, Unauthorized
 
-import pdb
-
 # --- START CONFIGURATION ---
 
 # Your Canvas instance URL
