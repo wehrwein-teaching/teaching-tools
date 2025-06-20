@@ -59,6 +59,8 @@ SUBMISSION_PERCENTILES = {
     "Good": 0.95       # 95th percentile
 }
 
+DOWNLOAD_COMMENT_ATTACHMENTS = True
+
 # --- END CONFIGURATION ---
 
 
@@ -67,7 +69,6 @@ def sanitize_filename(name):
     Removes characters from a string that are invalid for file names.
     """
     return "".join(c for c in name if c.isalnum() or c in (' ', '.', '_')).rstrip()
-
 
 def download_submission_examples(canvas, course_id, assignment_names):
     """
@@ -208,15 +209,16 @@ def download_submission_examples(canvas, course_id, assignment_names):
                                 comment_file.write("="*50 + "\n\n")
                                 
                                 for i, comment in enumerate(submission.submission_comments, 1):
-                                    attachment = comment['attachments'][0]  # Download the first attachment
-                                    original_filename = attachment['filename']
-                                    file_extension = os.path.splitext(original_filename)[1]
-                                    comment_attachment_file = f"{clean_assignment_name}_{percent_score}_comment{i}{file_extension}"
-                                    comment_attachment_path = os.path.join(quantile_dir, comment_attachment_file)
-                                    print(f"  -> Downloading '{comment_attachment_file}' to {quantile_label} folder...")
-                                    attachment = File(requester, attachment)
-                                    attachment.download(comment_attachment_path)
-                                    print(f"     Success! Saved to '{file_path}'")
+                                    if DOWNLOAD_COMMENT_ATTACHMENTS:
+                                        attachment = comment['attachments'][0]  # Download the first attachment
+                                        original_filename = attachment['filename']
+                                        file_extension = os.path.splitext(original_filename)[1]
+                                        comment_attachment_file = f"{clean_assignment_name}_{percent_score}_comment{i}{file_extension}"
+                                        comment_attachment_path = os.path.join(quantile_dir, comment_attachment_file)
+                                        print(f"  -> Downloading '{comment_attachment_file}' to {quantile_label} folder...")
+                                        attachment = File(requester, attachment)
+                                        attachment.download(comment_attachment_path)
+                                        print(f"     Success! Saved to '{comment_attachment_path}'")
 
                                     comment_file.write(f"Comment {i}:\n")
                                     comment_file.write(f"Author: {comment.get('author_name', 'Unknown')}\n")
@@ -238,15 +240,16 @@ def download_submission_examples(canvas, course_id, assignment_names):
                                         comment_file.write("="*50 + "\n\n")
                                         
                                         for i, comment in enumerate(comments.submission_comments, 1):
-                                            attachment = comment['attachments'][0]  # Download the first attachment
-                                            original_filename = attachment['filename']
-                                            file_extension = os.path.splitext(original_filename)[1]
-                                            comment_attachment_file = f"{clean_assignment_name}_{percent_score}_comment{i}{file_extension}"
-                                            comment_attachment_path = os.path.join(quantile_dir, comment_attachment_file)
-                                            print(f"  -> Downloading '{comment_attachment_file}' to {quantile_label} folder...")
-                                            attachment = File(requester, attachment)
-                                            attachment.download(comment_attachment_path)
-                                            print(f"     Success! Saved to '{file_path}'")
+                                            if DOWNLOAD_COMMENT_ATTACHMENTS:
+                                                attachment = comment['attachments'][0]  # Download the first attachment
+                                                original_filename = attachment['filename']
+                                                file_extension = os.path.splitext(original_filename)[1]
+                                                comment_attachment_file = f"{clean_assignment_name}_{percent_score}_comment{i}{file_extension}"
+                                                comment_attachment_path = os.path.join(quantile_dir, comment_attachment_file)
+                                                print(f"  -> Downloading '{comment_attachment_file}' to {quantile_label} folder...")
+                                                attachment = File(requester, attachment)
+                                                attachment.download(comment_attachment_path)
+                                                print(f"     Success! Saved to '{comment_attachment_path}'")
                                             
                                             comment_file.write(f"Comment {i}:\n")
                                             comment_file.write(f"Author: {comment.get('author_name', 'Unknown')}\n")
