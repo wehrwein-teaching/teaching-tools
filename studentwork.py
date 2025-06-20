@@ -29,6 +29,8 @@ Either install the canvasapi module and run this with python as usual, or use uv
 """
 import os
 from canvasapi import Canvas
+from canvasapi.requester import Requester
+from canvasapi.file import File
 from canvasapi.exceptions import CanvasException, ResourceDoesNotExist, Unauthorized
 
 # --- START CONFIGURATION ---
@@ -37,15 +39,15 @@ from canvasapi.exceptions import CanvasException, ResourceDoesNotExist, Unauthor
 API_URL = "https://wwu.instructure.com"
 
 # Your Canvas API Key (generate this from your user settings in Canvas)
-API_KEY = 0 # <--- Replace with your api key
+API_KEY = "1337" # <--- Replace with your api key
 
 # The ID of the course containing the assignments
-COURSE_ID = 1766660  # <--- Replace with your Course ID
+COURSE_ID = 1766660 # <--- Replace with your Course ID
 
 # The local directory where files will be saved
 DOWNLOAD_DIR = "" # <--- Replace with the path you want files saved to
 
-# A list of assignment IDs to process from the course
+# A list of assignment names (not IDs) to process from the course
 ASSIGNMENT_NAMES = [] # <--- Replace with a list of assignment names
 
 # Percentiles to sample for submission examples
@@ -57,6 +59,8 @@ SUBMISSION_PERCENTILES = {
     "Good": 0.95       # 95th percentile
 }
 
+DOWNLOAD_COMMENT_ATTACHMENTS = True
+
 # --- END CONFIGURATION ---
 
 
@@ -65,7 +69,6 @@ def sanitize_filename(name):
     Removes characters from a string that are invalid for file names.
     """
     return "".join(c for c in name if c.isalnum() or c in (' ', '.', '_')).rstrip()
-
 
 def download_submission_examples(canvas, course_id, assignment_names):
     """
@@ -101,7 +104,7 @@ def download_submission_examples(canvas, course_id, assignment_names):
     # Get all assignments for the course
     try:
         all_assignments = list(course.get_assignments())
-        print(f"Found {len(all_assignments)} total assignments in the course")
+        print(f"Found {len(all_assignments)} total assignments in the course:")
     except Exception as e:
         print(f"Error retrieving assignments: {e}")
         return
@@ -124,6 +127,9 @@ def download_submission_examples(canvas, course_id, assignment_names):
 
     print(f"Found {len(assignments_to_process)} assignments to process")
 
+    # Requester for attachment files
+    requester = Requester(API_URL, API_KEY)
+    
     # Process each assignment found
     for assignment in assignments_to_process:
         print("\n" + "="*50)
@@ -208,6 +214,17 @@ def download_submission_examples(canvas, course_id, assignment_names):
                                     comment_file.write(f"Date: {comment.get('created_at', 'Unknown')}\n")
                                     comment_file.write(f"Comment: {comment.get('comment', 'No comment text')}\n")
                                     comment_file.write("-" * 30 + "\n\n")
+                                    if DOWNLOAD_COMMENT_ATTACHMENTS and "attachments" in comment:
+                                        attachment = comment['attachments'][0]  # Download the first attachment
+                                        original_filename = attachment['filename']
+                                        file_extension = os.path.splitext(original_filename)[1]
+                                        comment_attachment_file = f"{clean_assignment_name}_{percent_score}_comment{i}{file_extension}"
+                                        comment_attachment_path = os.path.join(quantile_dir, comment_attachment_file)
+                                        print(f"  -> Downloading '{comment_attachment_file}' to {quantile_label} folder...")
+                                        attachment = File(requester, attachment)
+                                        attachment.download(comment_attachment_path)
+                                        print(f"     Success! Saved to '{comment_attachment_path}'")
+
                             
                             print(f"     Comments saved to '{comment_file_path}'")
                         else:
@@ -228,6 +245,16 @@ def download_submission_examples(canvas, course_id, assignment_names):
                                             comment_file.write(f"Date: {comment.get('created_at', 'Unknown')}\n")
                                             comment_file.write(f"Comment: {comment.get('comment', 'No comment text')}\n")
                                             comment_file.write("-" * 30 + "\n\n")
+                                            if DOWNLOAD_COMMENT_ATTACHMENTS and 'attachments' in comment:
+                                                attachment = comment['attachments'][0]  # Download the first attachment
+                                                original_filename = attachment['filename']
+                                                file_extension = os.path.splitext(original_filename)[1]
+                                                comment_attachment_file = f"{clean_assignment_name}_{percent_score}_comment{i}{file_extension}"
+                                                comment_attachment_path = os.path.join(quantile_dir, comment_attachment_file)
+                                                print(f"  -> Downloading '{comment_attachment_file}' to {quantile_label} folder...")
+                                                attachment = File(requester, attachment)
+                                                attachment.download(comment_attachment_path)
+                                                print(f"     Success! Saved to '{comment_attachment_path}'")
                                     
                                     print(f"     Comments saved to '{comment_file_path}'")
                                 else:
