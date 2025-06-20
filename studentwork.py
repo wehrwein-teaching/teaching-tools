@@ -209,7 +209,12 @@ def download_submission_examples(canvas, course_id, assignment_names):
                                 comment_file.write("="*50 + "\n\n")
                                 
                                 for i, comment in enumerate(submission.submission_comments, 1):
-                                    if DOWNLOAD_COMMENT_ATTACHMENTS:
+                                    comment_file.write(f"Comment {i}:\n")
+                                    comment_file.write(f"Author: {comment.get('author_name', 'Unknown')}\n")
+                                    comment_file.write(f"Date: {comment.get('created_at', 'Unknown')}\n")
+                                    comment_file.write(f"Comment: {comment.get('comment', 'No comment text')}\n")
+                                    comment_file.write("-" * 30 + "\n\n")
+                                    if DOWNLOAD_COMMENT_ATTACHMENTS and "attachments" in comment:
                                         attachment = comment['attachments'][0]  # Download the first attachment
                                         original_filename = attachment['filename']
                                         file_extension = os.path.splitext(original_filename)[1]
@@ -220,11 +225,6 @@ def download_submission_examples(canvas, course_id, assignment_names):
                                         attachment.download(comment_attachment_path)
                                         print(f"     Success! Saved to '{comment_attachment_path}'")
 
-                                    comment_file.write(f"Comment {i}:\n")
-                                    comment_file.write(f"Author: {comment.get('author_name', 'Unknown')}\n")
-                                    comment_file.write(f"Date: {comment.get('created_at', 'Unknown')}\n")
-                                    comment_file.write(f"Comment: {comment.get('comment', 'No comment text')}\n")
-                                    comment_file.write("-" * 30 + "\n\n")
                             
                             print(f"     Comments saved to '{comment_file_path}'")
                         else:
@@ -240,7 +240,12 @@ def download_submission_examples(canvas, course_id, assignment_names):
                                         comment_file.write("="*50 + "\n\n")
                                         
                                         for i, comment in enumerate(comments.submission_comments, 1):
-                                            if DOWNLOAD_COMMENT_ATTACHMENTS:
+                                            comment_file.write(f"Comment {i}:\n")
+                                            comment_file.write(f"Author: {comment.get('author_name', 'Unknown')}\n")
+                                            comment_file.write(f"Date: {comment.get('created_at', 'Unknown')}\n")
+                                            comment_file.write(f"Comment: {comment.get('comment', 'No comment text')}\n")
+                                            comment_file.write("-" * 30 + "\n\n")
+                                            if DOWNLOAD_COMMENT_ATTACHMENTS and 'attachments' in comment:
                                                 attachment = comment['attachments'][0]  # Download the first attachment
                                                 original_filename = attachment['filename']
                                                 file_extension = os.path.splitext(original_filename)[1]
@@ -250,12 +255,6 @@ def download_submission_examples(canvas, course_id, assignment_names):
                                                 attachment = File(requester, attachment)
                                                 attachment.download(comment_attachment_path)
                                                 print(f"     Success! Saved to '{comment_attachment_path}'")
-                                            
-                                            comment_file.write(f"Comment {i}:\n")
-                                            comment_file.write(f"Author: {comment.get('author_name', 'Unknown')}\n")
-                                            comment_file.write(f"Date: {comment.get('created_at', 'Unknown')}\n")
-                                            comment_file.write(f"Comment: {comment.get('comment', 'No comment text')}\n")
-                                            comment_file.write("-" * 30 + "\n\n")
                                     
                                     print(f"     Comments saved to '{comment_file_path}'")
                                 else:
